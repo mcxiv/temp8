@@ -1,3 +1,5 @@
+# temp-mail.org has now activated Cloudflare's anti-bot protection. This means that you can't use temp8 anymore. (for now *wink wink*)
+
 # temp8
 
 ```temp8``` is a wrapper for **[temp-mail.org](https://temp-mail.org/en/)**. It allows you to create temporary emails and check its inbox.
