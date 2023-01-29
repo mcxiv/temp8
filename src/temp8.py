@@ -8,7 +8,6 @@ import sys
 import time
 import json
 import os
-import random
 
 # 3rd party
 import requests
@@ -52,14 +51,14 @@ class TempMail:
         headers = {
             'User-Agent': UserAgent().random,
         }
-        error = 0
+
+        timeout = time.time()
         while 1:
             response = self.scraper.post('https://web2.temp-mail.org/mailbox', headers=headers)
             if response.status_code == 200:
                 break
-            if error >= 50:
+            if time.time() - timeout >= 30:
                 sys.exit('Error: Could not generate a new mail')
-            error += 1
             self.scraper = cloudscraper.create_scraper()
 
         response = response.json()
@@ -79,14 +78,13 @@ class TempMail:
             'Authorization': f'Bearer {self.token}',
         }
 
-        error = 0
+        timeout = time.time()
         while 1:
             response = self.scraper.get('https://web2.temp-mail.org/messages', headers=headers)
             if response.status_code == 200:
                 break
-            if error >= 50:
+            if time.time() - timeout >= 30:
                 sys.exit('Error: Could not get messages')
-            error += 1
             self.scraper = cloudscraper.create_scraper()
 
         return response.json()['messages']
