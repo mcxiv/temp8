@@ -1,8 +1,8 @@
-# temp-mail.org has now activated Cloudflare's anti-bot protection. This means that you can't use temp8 anymore. (for now *wink wink*)
-
 # temp8
 
 ```temp8``` is a wrapper for **[temp-mail.org](https://temp-mail.org/en/)**. It allows you to create temporary emails and check its inbox.
+
+**temp-mail.org has now activated Cloudflare's anti-bot protection. This means that you can encounter some issues when using temp8.**
 
 ## Why temp8 ?
 
@@ -10,6 +10,13 @@ I could have paid for the API, but why would I do that when I can just use a few
 
 ## Output example
 ![temp8 output](img/demo.gif?raw=true "temp8 output example")
+
+## Installation
+```py
+pip install -r requirements.txt
+```
+
+You will also need to install [nodejs](https://nodejs.org/en/download/) as [cloudscraper](https://www.github.com/VeNoMouS/cloudscraper) uses it to bypass Cloudflare's anti-bot protection.
 
 ## Quick start
 ```py

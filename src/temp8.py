@@ -8,11 +8,13 @@ import sys
 import time
 import json
 import os
+import random
 
 # 3rd party
 import requests
 from fake_useragent import UserAgent
 from rich import print_json, print as rprint
+import cloudscraper
 
 # --------------------------------------------------
 
@@ -24,7 +26,8 @@ class TempMail:
         generate a new mailbox
         """
 
-        self.userAgent = UserAgent().random
+        self.scraper = cloudscraper.create_scraper()
+
         if os.path.exists('mailbox.json') and os.path.getsize('mailbox.json') > 0:
             with open('mailbox.json', 'r') as f:
                 data = json.load(f)
@@ -47,12 +50,17 @@ class TempMail:
         """
 
         headers = {
-            'User-Agent': self.userAgent,
+            'User-Agent': UserAgent().random,
         }
-
-        response = requests.post('https://web2.temp-mail.org/mailbox', headers=headers)
-        if response.status_code != 200:
-            sys.exit('Error: Could not generate a new mail')
+        error = 0
+        while 1:
+            response = self.scraper.post('https://web2.temp-mail.org/mailbox', headers=headers)
+            if response.status_code == 200:
+                break
+            if error >= 50:
+                sys.exit('Error: Could not generate a new mail')
+            error += 1
+            self.scraper = cloudscraper.create_scraper()
 
         response = response.json()
         response['timestamp'] = time.time()
@@ -67,13 +75,19 @@ class TempMail:
         """
 
         headers = {
-            'User-Agent': self.userAgent,
+            'User-Agent': UserAgent().random,
             'Authorization': f'Bearer {self.token}',
         }
 
-        response = requests.get('https://web2.temp-mail.org/messages', headers=headers)
-        if response.status_code != 200:
-            sys.exit('Error: Could not get messages')
+        error = 0
+        while 1:
+            response = self.scraper.get('https://web2.temp-mail.org/messages', headers=headers)
+            if response.status_code == 200:
+                break
+            if error >= 50:
+                sys.exit('Error: Could not get messages')
+            error += 1
+            self.scraper = cloudscraper.create_scraper()
 
         return response.json()['messages']
 
