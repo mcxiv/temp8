@@ -31,7 +31,7 @@ class TempMail:
             with open('mailbox.json', 'r') as f:
                 data = json.load(f)
                 self.timestamp = data['timestamp']
-            if time.time() - self.timestamp > 3600:
+            if time.time() - self.timestamp > 7200:
                 self.generate_mailbox()
 
         else:
@@ -44,6 +44,9 @@ class TempMail:
             self.token = data['token']
             self.mailbox = data['mailbox']
             self.timestamp = data['timestamp']
+
+        if not os.path.exists(self.mailbox):
+            os.mkdir(self.mailbox)
 
     def generate_mailbox(self):
         """
@@ -88,8 +91,58 @@ class TempMail:
             if time.time() - timeout >= 5:
                 return -1
             self.scraper = cloudscraper.create_scraper()
+        with open(f'{self.mailbox}/messages.json', 'w+') as f:
+            json.dump(response.json(), f, indent=4)
 
         return response.json()['messages']
+
+    def get_mail_data(self, id):
+        """
+        It gets the mail data from the API and saves the attachments and bodyHtml to the local directory
+
+        :param id: The id of the email you want to get the data of
+        :return: A dictionary with the mail data
+        """
+
+        headers = {
+            'User-Agent': UserAgent().random,
+            'Authorization': f'Bearer {self.token}',
+        }
+
+        timeout = time.time()
+        while 1:
+            response = self.scraper.get(
+                f'https://web2.temp-mail.org/messages/{id}/', headers=headers)
+            if response.status_code == 200:
+                break
+            if time.time() - timeout >= 5:
+                return -1
+            self.scraper = cloudscraper.create_scraper()
+        response = response.json()
+        if not os.path.exists(f'{self.mailbox}/'+response['_id']):
+            os.mkdir(f'{self.mailbox}/'+response['_id'])
+        with open(f'{self.mailbox}/' + response['_id'] + '/bodyHtml.html', 'w+') as f:
+            f.write(response['bodyHtml'])
+        response['bodyHtml'] = 'Saved to bodyHtml.html'
+
+        if response['attachmentsCount'] > 0:
+            for attachment in response['attachments']:
+                timeout = time.time()
+                while 1:
+                    _response = self.scraper.get(
+                        f'https://web2.temp-mail.org/messages/{id}/attachment/' +
+                        str(attachment['_id']),
+                        headers=headers)
+                    if _response.status_code == 200:
+                        break
+                    if time.time() - timeout >= 5:
+                        return -1
+                    self.scraper = cloudscraper.create_scraper()
+                with open(f'{self.mailbox}/{response["_id"]}/{attachment["filename"]}', 'wb') as f:
+                    f.write(_response.content)
+            response['attachments'] = 'Saved locally'
+
+        return response
 
 
 if __name__ == '__main__':
@@ -103,6 +156,13 @@ if __name__ == '__main__':
                 rprint('[bold red]Error while getting messages, retrying in 10 seconds')
             else:
                 print_json(json.dumps(messages[-1], indent=4))
+                if not os.path.exists(f'{tempmail.mailbox}/'+messages[-1]['_id']):
+                    messageData = tempmail.get_mail_data(messages[-1]['_id'])
+                    if messageData == -1:
+                        rprint('[bold red]Error while getting message data, retrying in 10 seconds')
+                    else:
+                        print_json(json.dumps(messageData, indent=4))
+
         except IndexError:
             rprint('[bold red]No mail received yet')
         time.sleep(10)
