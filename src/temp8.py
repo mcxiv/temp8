@@ -48,9 +48,12 @@ class TempMail:
         if not os.path.exists(self.mailbox):
             os.mkdir(self.mailbox)
 
+        with open(f'{self.mailbox}/mailbox.json', 'w+') as f:
+            f.write(json.dumps(data, indent=4, sort_keys=True))
+
     def generate_mailbox(self):
         """
-        It generates a new email address and saves it to a file
+        It generates a new email address and saves it to a json file
         """
 
         headers = {
@@ -71,6 +74,16 @@ class TempMail:
 
         with open('mailbox.json', 'w+') as f:
             json.dump(response, f, indent=4, sort_keys=True)
+
+    def refresh_mailbox(self):
+        """
+        It refreshes the mailbox, and saves the new one to a json file
+        """
+
+        if os.path.exists('mailbox.json'):
+            os.remove('mailbox.json')
+
+        self.__init__()
 
     def get_messages(self):
         """
