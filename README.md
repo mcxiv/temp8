@@ -29,7 +29,7 @@ print(tempmail.get_mail_data(id)) # Prints the mail data and saves it locally (A
 ## What does it do ?
 It creates a random mail on **[temp-mail.org](https://temp-mail.org/en/)** and allows you to check its inbox.
 Your new email address, its token, and the timestamp when it was created are stored in a file called ```mailbox.json```.
-Every time you instantiate a ```TempMail``` object, it checks if the mailbox is still valid (Timestamp less than 1 hour). If it's not, it creates a new one.
+Every time you instantiate a ```TempMail``` object, it checks if the mailbox is still valid (Timestamp less than 2 hours). If it's not, it creates a new one.
 
 ## Contributing
 Feel free to create a pull request if you want to add something to the project. I'll be happy to review it. :)
