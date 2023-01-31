@@ -22,7 +22,8 @@ You will also need to install [nodejs](https://nodejs.org/en/download/) as [clou
 ```py
 tempmail = TempMail() # This generates a random mailbox
 print(tempmail.mailbox) # Prints the email address
-print(tempmail.get_messages()) # Prints the inbox
+print(tempmail.get_messages()) # Prints the inbox, and saves it locally as a json file
+print(tempmail.get_mail_data(id)) # Prints the mail data and saves it locally (Attachements included)
 ```
 
 ## What does it do ?
