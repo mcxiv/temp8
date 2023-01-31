@@ -13,6 +13,7 @@ import os
 import requests
 from fake_useragent import UserAgent
 from rich import print_json, print as rprint
+import cloudscraper
 
 # --------------------------------------------------
 
@@ -24,7 +25,8 @@ class TempMail:
         generate a new mailbox
         """
 
-        self.userAgent = UserAgent().random
+        self.scraper = cloudscraper.create_scraper()
+
         if os.path.exists('mailbox.json') and os.path.getsize('mailbox.json') > 0:
             with open('mailbox.json', 'r') as f:
                 data = json.load(f)
@@ -33,7 +35,9 @@ class TempMail:
                 self.generate_mailbox()
 
         else:
-            self.generate_mailbox()
+            mailbox = self.generate_mailbox()
+            if mailbox == -1:
+                sys.exit('Error: Could not generate a mailbox. Please, try again.')
 
         with open('mailbox.json', 'r') as f:
             data = json.load(f)
@@ -47,12 +51,17 @@ class TempMail:
         """
 
         headers = {
-            'User-Agent': self.userAgent,
+            'User-Agent': UserAgent().random,
         }
 
-        response = requests.post('https://web2.temp-mail.org/mailbox', headers=headers)
-        if response.status_code != 200:
-            sys.exit('Error: Could not generate a new mail')
+        timeout = time.time()
+        while 1:
+            response = self.scraper.post('https://web2.temp-mail.org/mailbox', headers=headers)
+            if response.status_code == 200:
+                break
+            if time.time() - timeout >= 5:
+                return -1
+            self.scraper = cloudscraper.create_scraper()
 
         response = response.json()
         response['timestamp'] = time.time()
@@ -67,13 +76,18 @@ class TempMail:
         """
 
         headers = {
-            'User-Agent': self.userAgent,
+            'User-Agent': UserAgent().random,
             'Authorization': f'Bearer {self.token}',
         }
 
-        response = requests.get('https://web2.temp-mail.org/messages', headers=headers)
-        if response.status_code != 200:
-            sys.exit('Error: Could not get messages')
+        timeout = time.time()
+        while 1:
+            response = self.scraper.get('https://web2.temp-mail.org/messages', headers=headers)
+            if response.status_code == 200:
+                break
+            if time.time() - timeout >= 5:
+                return -1
+            self.scraper = cloudscraper.create_scraper()
 
         return response.json()['messages']
 
@@ -84,7 +98,11 @@ if __name__ == '__main__':
     while 1:
         rprint('[bold magenta]Last mail received:')
         try:
-            print_json(json.dumps(tempmail.get_messages()[-1], indent=4))
+            messages = tempmail.get_messages()
+            if messages == -1:
+                rprint('[bold red]Error while getting messages, retrying in 10 seconds')
+            else:
+                print_json(json.dumps(messages[-1], indent=4))
         except IndexError:
             rprint('[bold red]No mail received yet')
         time.sleep(10)
