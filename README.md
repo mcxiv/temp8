@@ -9,7 +9,7 @@
 I could have paid for the API, but why would I do that when I can just use a few requests? It's not like they're going to sue me haha ^^^^. (pls don't)
 
 ## Output example
-![temp8 output](img/demo.gif?raw=true "temp8 output example")
+![temp8 output](img/demo_fixed.gif?raw=true "temp8 output example")
 
 ## Installation
 ```py
