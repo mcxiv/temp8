@@ -55,3 +55,27 @@ def test_get_messages():
     mail = script.TempMail()
     messages = mail.get_messages()
     assert messages is not None
+
+
+def test_refresh_mailbox():
+    """ Scenario:
+    * Init the class
+    * Save the class attributes
+    * Refresh the mailbox
+    * Check if the mailbox.json file exists
+    * Check that the class attributes changed
+    """
+
+    mail = script.TempMail()
+    mailboxAttributes = {
+        'mailbox': mail.mailbox,
+        'token': mail.token,
+        'timestamp': mail.timestamp
+    }
+
+    mail.refresh_mailbox()
+    assert os.path.exists('mailbox.json') == True
+    
+    assert mail.mailbox is not mailboxAttributes['mailbox']
+    assert mail.token is not mailboxAttributes['token']
+    assert mail.timestamp is not mailboxAttributes['timestamp']
