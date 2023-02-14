@@ -131,7 +131,9 @@ dmypy.json
 # Files
 mailbox.json
 .envrc
+report.html
 
 # Folder
 .vscode
 *.com/
+assets/
